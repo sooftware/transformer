@@ -11,37 +11,39 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from typing import Optional
 
 
 class Transformer(nn.Module):
     """
-    PyTorch Implementation of Transformer proposed in "Attention Is All You Need"
+    A Transformer model. User is able to modify the attributes as needed.
+    The architecture is based on the paper "Attention Is All You Need".
     https://arxiv.org/abs/1706.03762
+
+    Args: d_model, num_heads, num_layers, num_classes
+
     """
-    def __init__(self, d_model, num_heads, num_layers, num_classes):
+    def __init__(self, num_classes: int, d_model: int = 512,
+                 num_encoder_layers: int = 6, num_decoder_layers: int = 6,
+                 num_heads: int = 8, dropout_p: float = 0.3):
         super(Transformer, self).__init__()
-        self.encoder = Encoder(
-            d_model=d_model,
-            num_layers=num_layers,
-            num_heads=num_heads
-        )
-        self.decoder = Decoder(
-            d_model=d_model,
-            num_layers=num_layers,
-            num_heads=num_heads
-        )
+        self.encoder = TransformerEncoder(d_model, num_encoder_layers, num_heads, dropout_p)
+        self.decoder = TransformerDecoder(d_model, num_decoder_layers, num_heads, dropout_p)
         self.linear_out = nn.Linear(d_model, num_classes)
 
-    def forward(self, encoder_inputs, decoder_inputs):
+    def forward(self, encoder_inputs: torch.Tensor, decoder_inputs: torch.Tensor):
         encoder_outputs = self.encoder(encoder_inputs)
         decoder_outputs = self.decoder(decoder_inputs, encoder_outputs)
         result = self.linear_out(decoder_outputs)
         return result
 
 
-class Encoder(nn.Module):
-    def __init__(self, d_model, num_layers, num_heads):
-        super(Encoder, self).__init__()
+class TransformerEncoder(nn.Module):
+    """
+    Encoder of Transformer: stack of N encoder layers
+    """
+    def __init__(self, d_model: int = 512, num_layers: int = 6, num_heads: int = 8, dropout_p: float = 0.3):
+        super(TransformerEncoder, self).__init__()
         self.d_model = d_model
         self.num_layers = num_layers
         self.num_heads = num_heads
@@ -50,12 +52,37 @@ class Encoder(nn.Module):
         pass
 
 
-class Decoder(nn.Module):
-    def __init__(self, d_model, num_layers, num_heads):
-        super(Decoder, self).__init__()
+class TransformerEncoderLayer(nn.Module):
+    """
+    EncoderLayer is made up of self-attention and feedforward network.
+    This standard encoder layer is based on the paper "Attention Is All You Need".
+    """
+    def __init__(self):
+        super(TransformerEncoderLayer, self).__init__()
+
+    def forward(self):
+        pass
+
+
+class TransformerDecoder(nn.Module):
+    """ Decoder of Transformer:  stack of N decoder layers """
+    def __init__(self, d_model: int = 512, num_layers: int = 6, num_heads: int = 8, dropout_p: float = 0.3):
+        super(TransformerDecoder, self).__init__()
         self.d_model = d_model
         self.num_layers = num_layers
         self.num_heads = num_heads
+
+    def forward(self):
+        pass
+
+
+class TransformerDecoderLayer(nn.Module):
+    """
+    DecoderLayer is made up of self-attention, multi-head attention and feedforward network.
+    This standard decoder layer is based on the paper "Attention Is All You Need".
+    """
+    def __init__(self):
+        super(TransformerDecoderLayer, self).__init__()
 
     def forward(self):
         pass
@@ -80,11 +107,11 @@ class ScaledDotProductAttention(nn.Module):
         - **context**: tensor containing the context vector from attention mechanism.
         - **attn**: tensor containing the attention (alignment) from the encoder outputs.
     """
-    def __init__(self, dim):
+    def __init__(self, dim: int):
         super(ScaledDotProductAttention, self).__init__()
         self.dim = dim
 
-    def forward(self, query, key, value, mask):
+    def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, mask: Optional[torch.Tensor] = None):
         score = torch.bmm(query, key.transpose(1, 2)) / np.sqrt(self.dim)
 
         if mask is not None:
@@ -130,7 +157,7 @@ class MultiHeadAttention(nn.Module):
         - **output** (batch, output_len, dimensions): tensor containing the attended output features.
         - **attn** (batch * num_heads, v_len): tensor containing the attention (alignment) from the encoder outputs.
     """
-    def __init__(self, d_model=512, num_heads=8):
+    def __init__(self, d_model: int = 512, num_heads: int = 8):
         super(MultiHeadAttention, self).__init__()
 
         assert d_model % num_heads == 0, "d_model % num_heads should be zero."
@@ -144,7 +171,7 @@ class MultiHeadAttention(nn.Module):
         self.linear_out = nn.Linear(d_model, d_model)
         self.layer_norm = nn.LayerNorm(d_model)
 
-    def forward(self, query, key, value, mask):
+    def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, mask: Optional[torch.Tensor] = None):
         batch_size = value.size(0)
         residual = query
 
