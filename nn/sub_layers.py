@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from typing import Optional
-from nn.modules import Linear, LayerNorm
+from nn.modules import Linear, LayerNormalization
 
 
 class ScaledDotProductAttention(nn.Module):
@@ -91,7 +91,7 @@ class MultiHeadAttention(nn.Module):
         self.linear_k = Linear(d_model, self.d_head * num_heads)
         self.linear_v = Linear(d_model, self.d_head * num_heads)
         self.linear_out = Linear(d_model, d_model)
-        self.layer_norm = LayerNorm(d_model)
+        self.layer_norm = LayerNormalization(d_model)
 
     def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, mask: Optional[torch.Tensor] = None):
         batch_size = value.size(0)
@@ -142,7 +142,7 @@ class PositionwiseFeedForwardNet(nn.Module):
             self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model, kernel_size=1)
         else:
             raise ValueError("Unsupported mode: {0}".format(self.mode))
-        self.layer_norm = LayerNorm(d_model)
+        self.layer_norm = LayerNormalization(d_model)
 
     def forward(self, inputs: torch.Tensor):
         residual = inputs  # inputs : BxTxD

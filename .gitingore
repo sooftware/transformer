@@ -5,3 +5,13 @@
 __pycache__/
 .idea/
 .idea/*
+*.bin
+*.zip
+*.idea
+docs/training
+docs/training/*
+__pycache__/
+  
+*.pyc
+.idea
+.ipynb_checkpoints

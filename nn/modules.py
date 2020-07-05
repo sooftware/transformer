@@ -14,9 +14,9 @@ class Linear(nn.Module):
         return self.linear(inputs)
 
 
-class LayerNorm(nn.Module):
+class LayerNormalization(nn.Module):
     def __init__(self, dim: int, eps: float = 1e-6):
-        super(LayerNorm, self).__init__()
+        super(LayerNormalization, self).__init__()
         self.gamma = nn.Parameter(torch.ones(dim))
         self.beta = nn.Parameter(torch.zeros(dim))
         self.eps = eps
