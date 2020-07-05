@@ -1,97 +1,15 @@
-"""
-@github{
-    title = {PyTorch Transformer},
-    author = {Soohwan Kim},
-    pyblisher = {GitHub},
-    url = {https://github.com/sooftware/PyTorch-Transformer},
-    year = {2020}
-}
-"""
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 from typing import Optional
-
-
-class Transformer(nn.Module):
-    """
-    A Transformer model. User is able to modify the attributes as needed.
-    The architecture is based on the paper "Attention Is All You Need".
-    https://arxiv.org/abs/1706.03762
-
-    Args: d_model, num_heads, num_layers, num_classes
-
-    """
-    def __init__(self, num_classes: int, d_model: int = 512,
-                 num_encoder_layers: int = 6, num_decoder_layers: int = 6,
-                 num_heads: int = 8, dropout_p: float = 0.3):
-        super(Transformer, self).__init__()
-        self.encoder = TransformerEncoder(d_model, num_encoder_layers, num_heads, dropout_p)
-        self.decoder = TransformerDecoder(d_model, num_decoder_layers, num_heads, dropout_p)
-        self.linear_out = nn.Linear(d_model, num_classes)
-
-    def forward(self, encoder_inputs: torch.Tensor, decoder_inputs: torch.Tensor):
-        encoder_outputs = self.encoder(encoder_inputs)
-        decoder_outputs = self.decoder(decoder_inputs, encoder_outputs)
-        result = self.linear_out(decoder_outputs)
-        return result
-
-
-class TransformerEncoder(nn.Module):
-    """
-    Encoder of Transformer: stack of N encoder layers
-    """
-    def __init__(self, d_model: int = 512, num_layers: int = 6, num_heads: int = 8, dropout_p: float = 0.3):
-        super(TransformerEncoder, self).__init__()
-        self.d_model = d_model
-        self.num_layers = num_layers
-        self.num_heads = num_heads
-
-    def forward(self):
-        pass
-
-
-class TransformerEncoderLayer(nn.Module):
-    """
-    EncoderLayer is made up of self-attention and feedforward network.
-    This standard encoder layer is based on the paper "Attention Is All You Need".
-    """
-    def __init__(self):
-        super(TransformerEncoderLayer, self).__init__()
-
-    def forward(self):
-        pass
-
-
-class TransformerDecoder(nn.Module):
-    """ Decoder of Transformer:  stack of N decoder layers """
-    def __init__(self, d_model: int = 512, num_layers: int = 6, num_heads: int = 8, dropout_p: float = 0.3):
-        super(TransformerDecoder, self).__init__()
-        self.d_model = d_model
-        self.num_layers = num_layers
-        self.num_heads = num_heads
-
-    def forward(self):
-        pass
-
-
-class TransformerDecoderLayer(nn.Module):
-    """
-    DecoderLayer is made up of self-attention, multi-head attention and feedforward network.
-    This standard decoder layer is based on the paper "Attention Is All You Need".
-    """
-    def __init__(self):
-        super(TransformerDecoderLayer, self).__init__()
-
-    def forward(self):
-        pass
 
 
 class ScaledDotProductAttention(nn.Module):
     """
     Scaled Dot-Product Attention propsed in "Attention Is All You Need"
-    https://arxiv.org/abs/1706.03762
+    Compute the dot products of the query with all keys, divide each by sqrt(dim),
+    and apply a softmax function to obtain the weights on the values
 
     Args: dim, mask
         dim (int): dimention of attention
@@ -125,8 +43,11 @@ class ScaledDotProductAttention(nn.Module):
 class MultiHeadAttention(nn.Module):
     """
     Multi-Head Attention proposed in "Attention Is All You Need"
-    Similar to standard `dot` attention but uses multiple attention distributions simultaneously to select relevant items.
-    https://arxiv.org/abs/1706.03762
+    Instead of performing a single attention function with d_model-dimensional keys, values, and queries,
+    project the queries, keys and values h times with different, learned linear projections to d_head dimensions.
+    These are concatenated and once again projected, resulting in the final values.
+    Multi-head attention allows the model to jointly attend to information from different representation
+    subspaces at different positions.
 
     MultiHead(Q, K, V) = Concat(head_1, ..., head_h) · W_o
         where head_i = Attention(Q · W_q, K · W_k, V · W_v)
@@ -197,8 +118,46 @@ class MultiHeadAttention(nn.Module):
 
 
 class PositionwiseFeedForwardNet(nn.Module):
-    def __init__(self):
+    """
+    Position-wise Feed-Forward Networks proposed in "Attention Is All You Need".
+    Fully connected feed-forward network, which is applied to each position separately and identically.
+    This consists of two linear transformations with a ReLU activation in between.
+    Another way of describing this is as two convolutions with kernel size 1.
+    """
+    def __init__(self, d_model: int = 512, d_ff: int = 2048, dropout_p: float = 0.3, mode: str = 'linear'):
         super(PositionwiseFeedForwardNet, self).__init__()
+        self.mode = mode.lower()
+        if self.mode == 'linear':
+            self.feed_forward = nn.Sequential(
+                nn.Linear(d_model, d_ff),
+                nn.Dropout(dropout_p),
+                nn.ReLU(),
+                nn.Linear(d_ff, d_model),
+                nn.Dropout(dropout_p)
+            )
+        elif self.mode == 'conv':
+            self.conv1 = nn.Conv1d(in_channels=d_model, out_channels=d_ff, kernel_size=1)
+            self.relu = nn.ReLU()
+            self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model, kernel_size=1)
+        else:
+            raise ValueError("Unsupported mode: {0}".format(self.mode))
+        self.layer_norm = nn.LayerNorm(d_model)
 
-    def forward(self):
-        pass
+    def forward(self, inputs: torch.Tensor):
+        residual = inputs  # x : BxTxD
+
+        if self.mode == 'linear':
+            output = self.feed_forward(inputs)
+            output = self.layer_norm(output + residual)
+
+        elif self.mode == 'conv':
+            output = self.conv1(inputs.transpose(1, 2))
+            output = self.relu(output)
+            output = self.conv2(output).transpose(1, 2)
+            output = self.layer_norm(output + residual)
+
+        else:
+            raise ValueError("Unsupported mode: {0}".format(self.mode))
+
+        return output
+

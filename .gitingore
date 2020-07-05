@@ -3,3 +3,5 @@
 .idea.ipynb_checkpoints
 *.zip
 __pycache__/
+.idea/
+.idea/*
