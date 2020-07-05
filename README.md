@@ -1,6 +1,7 @@
 # PyTorch Transformer
   
 A PyTorch Implementation of Transformer in [Attention Is All You Need](https://arxiv.org/abs/1706.03762).  
+This repository focused on implementing the contents of the paper as much as possible.  
   
 <img src="https://tutorials.pytorch.kr/_images/transformer_architecture.jpg" height=700>  
   
@@ -8,6 +9,7 @@ A PyTorch Implementation of Transformer in [Attention Is All You Need](https://a
   
 ## Prerequisites
   
+* Python 3.6+
 * Numpy: `pip install numpy` (Refer [here](https://github.com/numpy/numpy) for problem installing Numpy).
 * Pytorch: Refer to [PyTorch website](http://pytorch.org/) to install the version w.r.t. your environment.   
   
@@ -35,3 +37,4 @@ Ashish Vaswani et al. [Attention Is All You Need](https://arxiv.org/abs/1706.037
     year = {2020}
 }
 ```
+.
