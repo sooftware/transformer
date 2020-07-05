@@ -9,6 +9,7 @@
 """
 import torch
 import torch.nn as nn
+from nn.modules import Linear
 
 
 class Transformer(nn.Module):
@@ -26,7 +27,7 @@ class Transformer(nn.Module):
         super(Transformer, self).__init__()
         self.encoder = TransformerEncoder(d_model, num_encoder_layers, num_heads, dropout_p)
         self.decoder = TransformerDecoder(d_model, num_decoder_layers, num_heads, dropout_p)
-        self.linear_out = nn.Linear(d_model, num_classes)
+        self.linear_out = Linear(d_model, num_classes)
 
     def forward(self, encoder_inputs: torch.Tensor, decoder_inputs: torch.Tensor):
         encoder_outputs = self.encoder(encoder_inputs)
@@ -37,7 +38,9 @@ class Transformer(nn.Module):
 
 class TransformerEncoder(nn.Module):
     """
-    Encoder of Transformer: stack of N encoder layers
+    The TransformerEncoder is composed of a stack of N identical layers.
+    Each layer has two sub-layers. The first is a multi-head self-attention mechanism,
+    and the second is a simple, position-wise fully connected feed-forward network.
     """
     def __init__(self, d_model: int = 512, num_layers: int = 6, num_heads: int = 8, dropout_p: float = 0.3):
         super(TransformerEncoder, self).__init__()
@@ -56,14 +59,6 @@ class TransformerDecoder(nn.Module):
         self.d_model = d_model
         self.num_layers = num_layers
         self.num_heads = num_heads
-
-    def forward(self):
-        pass
-
-
-class PositionalEncoding(nn.Module):
-    def __init__(self):
-        super(PositionalEncoding, self).__init__()
 
     def forward(self):
         pass

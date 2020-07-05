@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from typing import Optional
+from nn.modules import Linear, LayerNorm
 
 
 class ScaledDotProductAttention(nn.Module):
@@ -86,11 +87,11 @@ class MultiHeadAttention(nn.Module):
         self.d_head = int(d_model / num_heads)
         self.num_heads = num_heads
         self.scaled_dot_attn = ScaledDotProductAttention(self.d_head)
-        self.linear_q = nn.Linear(d_model, self.d_head * num_heads)
-        self.linear_k = nn.Linear(d_model, self.d_head * num_heads)
-        self.linear_v = nn.Linear(d_model, self.d_head * num_heads)
-        self.linear_out = nn.Linear(d_model, d_model)
-        self.layer_norm = nn.LayerNorm(d_model)
+        self.linear_q = Linear(d_model, self.d_head * num_heads)
+        self.linear_k = Linear(d_model, self.d_head * num_heads)
+        self.linear_v = Linear(d_model, self.d_head * num_heads)
+        self.linear_out = Linear(d_model, d_model)
+        self.layer_norm = LayerNorm(d_model)
 
     def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, mask: Optional[torch.Tensor] = None):
         batch_size = value.size(0)
@@ -129,10 +130,10 @@ class PositionwiseFeedForwardNet(nn.Module):
         self.mode = mode.lower()
         if self.mode == 'linear':
             self.feed_forward = nn.Sequential(
-                nn.Linear(d_model, d_ff),
+                Linear(d_model, d_ff),
                 nn.Dropout(dropout_p),
                 nn.ReLU(),
-                nn.Linear(d_ff, d_model),
+                Linear(d_ff, d_model),
                 nn.Dropout(dropout_p)
             )
         elif self.mode == 'conv':
@@ -141,23 +142,19 @@ class PositionwiseFeedForwardNet(nn.Module):
             self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model, kernel_size=1)
         else:
             raise ValueError("Unsupported mode: {0}".format(self.mode))
-        self.layer_norm = nn.LayerNorm(d_model)
+        self.layer_norm = LayerNorm(d_model)
 
     def forward(self, inputs: torch.Tensor):
-        residual = inputs  # x : BxTxD
+        residual = inputs  # inputs : BxTxD
 
         if self.mode == 'linear':
             output = self.feed_forward(inputs)
-            output = self.layer_norm(output + residual)
 
-        elif self.mode == 'conv':
+        else:
             output = self.conv1(inputs.transpose(1, 2))
             output = self.relu(output)
             output = self.conv2(output).transpose(1, 2)
-            output = self.layer_norm(output + residual)
 
-        else:
-            raise ValueError("Unsupported mode: {0}".format(self.mode))
-
+        output = self.layer_norm(output + residual)
         return output
 
