@@ -1,32 +1,44 @@
 import math
 import torch
 import torch.nn as nn
+import numpy as np
 from typing import Optional
 
 
 class PositionalEncoding(nn.Module):
     """
     Positional Encoding proposed in "Attention Is All You Need".
+    Since transformer contains no recurrence and no convolution, in order for the model to make
+    use of the order of the sequence, we must add some positional information.
+
+    "Attention Is All You Need" use sine and cosine functions of different frequencies:
+        PE_(pos, 2i)    =  sin(pos / power(10000, 2i / d_model))
+        PE_(pos, 2i+1)  =  cos(pos / power(10000, 2i / d_model))
     """
-    def __init__(self, d_model: int = 512, dropout: float = 0.3, max_len: int = 5000):
+    def __init__(self, num_embeddings: int, d_model: int = 512, dropout: float = 0.3):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
-
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        self.pe = pe.unsqueeze(0).transpose(0, 1)
-        self.register_buffer('pe', pe)
+        self.pe = self.get_sinusoid_encoding_table(num_embeddings, d_model)
 
     def forward(self, embedded: torch.Tensor, step: Optional[int] = None):
         if step is None:
             embedded += self.pe[:, :embedded.size(1)]
         else:
             embedded += self.pe[:, step]
-            
+
         return self.dropout(embedded)
+
+    def get_sinusoid_encoding_table(self, num_embeddings: int, d_model: int = 512):
+        def cal_angle(pos: int, i: int):
+            return pos / np.power(10000, 2 * (i // 2) / d_model)  # i // 2: (2i, 2i +1) => 2i
+
+        def get_pos_angle_vector(pos: int):
+            return [cal_angle(pos, i) for i in range(d_model)]
+
+        sinusoid_table = np.array([get_pos_angle_vector(pos) for pos in range(num_embeddings)])
+        sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])
+        sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])
+        return torch.FloatTensor(sinusoid_table)
 
 
 class Embedding(nn.Module):
@@ -36,6 +48,4 @@ class Embedding(nn.Module):
         self.embedding = nn.Embedding(num_embeddings, d_model, padding_idx=pad_id)
 
     def forward(self, inputs: torch.Tensor):
-        embedded = self.embedding(inputs)
-        embedded *= self.sqrt_dim
-        return embedded
+        return self.embedding(inputs) * self.sqrt_dim

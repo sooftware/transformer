@@ -6,9 +6,26 @@ from typing import Optional
 from nn.modules import Linear, LayerNormalization
 
 
+class AddAndNormalization(nn.Module):
+    """
+    Add & Normalization layer proposed in "Attention Is All You Need".
+    Transformer employ a residual connection around each of the two sub-layers,
+    (Multi-Head Attention & Feed-Forward) followed by layer normalization.
+    """
+    def __init__(self, sublayer, d_model):
+        super(AddAndNormalization, self).__init__()
+        self.sublayer = sublayer
+        self.layer_norm = LayerNormalization(d_model)
+
+    def forward(self, *args):
+        residual = args[0]
+        output = self.sublayer(*args)
+        return self.layer_norm(output + residual)
+
+
 class ScaledDotProductAttention(nn.Module):
     """
-    Scaled Dot-Product Attention propsed in "Attention Is All You Need"
+    Scaled Dot-Product Attention proposed in "Attention Is All You Need"
     Compute the dot products of the query with all keys, divide each by sqrt(dim),
     and apply a softmax function to obtain the weights on the values
 
@@ -95,15 +112,14 @@ class MultiHeadAttention(nn.Module):
 
     def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, mask: Optional[torch.Tensor] = None):
         batch_size = value.size(0)
-        residual = query
 
-        query = self.linear_q(query).view(batch_size, -1, self.num_heads, self.d_head)  # BxTxNxD
-        key = self.linear_k(key).view(batch_size, -1, self.num_heads, self.d_head)      # BxTxNxD
-        value = self.linear_v(value).view(batch_size, -1, self.num_heads, self.d_head)  # BxTxNxD
+        query = self.linear_q(query).view(batch_size, -1, self.num_heads, self.d_head)  # BxQ_LENxNxD
+        key = self.linear_k(key).view(batch_size, -1, self.num_heads, self.d_head)      # BxK_LENxNxD
+        value = self.linear_v(value).view(batch_size, -1, self.num_heads, self.d_head)  # BxV_LENxNxD
 
-        query = query.permute(2, 0, 1, 3).contiguous().view(batch_size * self.num_heads, -1, self.d_head)  # BNxTxD
-        key = key.permute(2, 0, 1, 3).contiguous().view(batch_size * self.num_heads, -1, self.d_head)      # BNxTxD
-        value = value.permute(2, 0, 1, 3).contiguous().view(batch_size * self.num_heads, -1, self.d_head)  # BNxTxD
+        query = query.permute(2, 0, 1, 3).contiguous().view(batch_size * self.num_heads, -1, self.d_head)  # BNxQ_LENxD
+        key = key.permute(2, 0, 1, 3).contiguous().view(batch_size * self.num_heads, -1, self.d_head)      # BNxK_LENxD
+        value = value.permute(2, 0, 1, 3).contiguous().view(batch_size * self.num_heads, -1, self.d_head)  # BNxV_LENxD
 
         if mask is not None:
             mask = mask.unsqueeze(1).repeat(1, self.num_heads, 1, 1)  # BxNxQ_LENxK_LEN
@@ -113,20 +129,18 @@ class MultiHeadAttention(nn.Module):
         context = context.permute(1, 2, 0, 3).contiguous().view(batch_size, -1, self.num_heads * self.d_head)  # BxTxND
 
         output = self.linear_out(context)
-        output = self.layer_norm(output + residual)  # Add & Norm (residual connection)
-
         return output, attn
 
 
-class PositionwiseFeedForwardNet(nn.Module):
+class PositionwiseFeedforwardNet(nn.Module):
     """
-    Position-wise Feed-Forward Networks proposed in "Attention Is All You Need".
+    Position-wise Feedforward Networks proposed in "Attention Is All You Need".
     Fully connected feed-forward network, which is applied to each position separately and identically.
     This consists of two linear transformations with a ReLU activation in between.
     Another way of describing this is as two convolutions with kernel size 1.
     """
     def __init__(self, d_model: int = 512, d_ff: int = 2048, dropout_p: float = 0.3, mode: str = 'linear'):
-        super(PositionwiseFeedForwardNet, self).__init__()
+        super(PositionwiseFeedforwardNet, self).__init__()
         self.mode = mode.lower()
         if self.mode == 'linear':
             self.feed_forward = nn.Sequential(
@@ -136,17 +150,16 @@ class PositionwiseFeedForwardNet(nn.Module):
                 Linear(d_ff, d_model),
                 nn.Dropout(dropout_p)
             )
+
         elif self.mode == 'conv':
             self.conv1 = nn.Conv1d(in_channels=d_model, out_channels=d_ff, kernel_size=1)
             self.relu = nn.ReLU()
             self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model, kernel_size=1)
+
         else:
             raise ValueError("Unsupported mode: {0}".format(self.mode))
-        self.layer_norm = LayerNormalization(d_model)
 
     def forward(self, inputs: torch.Tensor):
-        residual = inputs  # inputs : BxTxD
-
         if self.mode == 'linear':
             output = self.feed_forward(inputs)
 
@@ -155,6 +168,4 @@ class PositionwiseFeedForwardNet(nn.Module):
             output = self.relu(output)
             output = self.conv2(output).transpose(1, 2)
 
-        output = self.layer_norm(output + residual)
         return output
-
