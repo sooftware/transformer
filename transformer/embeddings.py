@@ -1,8 +1,6 @@
 import math
 import torch
 import torch.nn as nn
-import numpy as np
-from typing import Optional
 
 
 class PositionalEncoding(nn.Module):
@@ -15,33 +13,29 @@ class PositionalEncoding(nn.Module):
         PE_(pos, 2i)    =  sin(pos / power(10000, 2i / d_model))
         PE_(pos, 2i+1)  =  cos(pos / power(10000, 2i / d_model))
     """
-    def __init__(self, num_embeddings: int, d_model: int = 512, dropout: float = 0.3):
+    def __init__(self, d_model, dropout=0.1, max_len=5000):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
-        self.pe = self.get_sinusoid_encoding_table(num_embeddings, d_model)
 
-    def forward(self, embedded: torch.Tensor, step: Optional[int] = None):
-        if step is None:
-            embedded += self.pe[:, :embedded.size(1)]
-        else:
-            embedded += self.pe[:, step]
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0).transpose(0, 1)
+        self.register_buffer('pe', pe)
 
+    def forward(self, embedded):
+        embedded += self.pe[:embedded.size(0), :]
         return self.dropout(embedded)
-
-    def get_sinusoid_encoding_table(self, num_embeddings: int, d_model: int = 512):
-        def cal_angle(pos: int, i: int):
-            return pos / np.power(10000, 2 * (i // 2) / d_model)  # i // 2: (2i, 2i +1) => 2i
-
-        def get_pos_angle_vector(pos: int):
-            return [cal_angle(pos, i) for i in range(d_model)]
-
-        sinusoid_table = np.array([get_pos_angle_vector(pos) for pos in range(num_embeddings)])
-        sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])
-        sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])
-        return torch.FloatTensor(sinusoid_table)
 
 
 class Embedding(nn.Module):
+    """
+    Embedding layer. Similarly to other sequence transduction models, transformer use learned embeddings
+    to convert the input tokens and output tokens to vectors of dimension d_model.
+    In the embedding layers, transformer multiply those weights by sqrt(d_model)
+    """
     def __init__(self, num_embeddings: int, pad_id: int, d_model):
         super(Embedding, self).__init__()
         self.sqrt_dim = math.sqrt(d_model)

@@ -3,24 +3,28 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from typing import Optional
-from nn.modules import Linear, LayerNormalization
+from transformer.modules import Linear, LayerNorm
 
 
-class AddAndNormalization(nn.Module):
+class AddNorm(nn.Module):
     """
     Add & Normalization layer proposed in "Attention Is All You Need".
     Transformer employ a residual connection around each of the two sub-layers,
     (Multi-Head Attention & Feed-Forward) followed by layer normalization.
     """
-    def __init__(self, sublayer, d_model):
-        super(AddAndNormalization, self).__init__()
+    def __init__(self, sublayer: nn.Module, d_model: int = 512):
+        super(AddNorm, self).__init__()
         self.sublayer = sublayer
-        self.layer_norm = LayerNormalization(d_model)
+        self.layer_norm = LayerNorm(d_model)
 
     def forward(self, *args):
         residual = args[0]
         output = self.sublayer(*args)
-        return self.layer_norm(output + residual)
+
+        if isinstance(output, tuple):
+            return self.layer_norm(output[0] + residual), output[1]
+        else:
+            return self.layer_norm(output + residual)
 
 
 class ScaledDotProductAttention(nn.Module):
@@ -107,8 +111,7 @@ class MultiHeadAttention(nn.Module):
         self.linear_q = Linear(d_model, self.d_head * num_heads)
         self.linear_k = Linear(d_model, self.d_head * num_heads)
         self.linear_v = Linear(d_model, self.d_head * num_heads)
-        self.linear_out = Linear(d_model, d_model)
-        self.layer_norm = LayerNormalization(d_model)
+        self.linear = Linear(d_model, d_model)
 
     def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, mask: Optional[torch.Tensor] = None):
         batch_size = value.size(0)
@@ -128,21 +131,21 @@ class MultiHeadAttention(nn.Module):
         context = context.view(self.num_heads, batch_size, -1, self.d_head)
         context = context.permute(1, 2, 0, 3).contiguous().view(batch_size, -1, self.num_heads * self.d_head)  # BxTxND
 
-        output = self.linear_out(context)
+        output = self.linear(context)
         return output, attn
 
 
-class PositionwiseFeedforwardNet(nn.Module):
+class PoswiseFeedForwardNet(nn.Module):
     """
     Position-wise Feedforward Networks proposed in "Attention Is All You Need".
     Fully connected feed-forward network, which is applied to each position separately and identically.
     This consists of two linear transformations with a ReLU activation in between.
     Another way of describing this is as two convolutions with kernel size 1.
     """
-    def __init__(self, d_model: int = 512, d_ff: int = 2048, dropout_p: float = 0.3, mode: str = 'linear'):
-        super(PositionwiseFeedforwardNet, self).__init__()
+    def __init__(self, d_model: int = 512, d_ff: int = 2048, dropout_p: float = 0.3, mode: str = 'feed_forward'):
+        super(PoswiseFeedForwardNet, self).__init__()
         self.mode = mode.lower()
-        if self.mode == 'linear':
+        if self.mode == 'ff':
             self.feed_forward = nn.Sequential(
                 Linear(d_model, d_ff),
                 nn.Dropout(dropout_p),
@@ -160,7 +163,7 @@ class PositionwiseFeedforwardNet(nn.Module):
             raise ValueError("Unsupported mode: {0}".format(self.mode))
 
     def forward(self, inputs: torch.Tensor):
-        if self.mode == 'linear':
+        if self.mode == 'ff':
             output = self.feed_forward(inputs)
 
         else:
