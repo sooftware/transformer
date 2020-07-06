@@ -10,8 +10,8 @@ class Linear(nn.Module):
         init.xavier_normal_(self.linear.weight)
         init.zeros_(self.linear.bias)
 
-    def forward(self, inputs):
-        return self.linear(inputs)
+    def forward(self, x):
+        return self.linear(x)
 
 
 class LayerNorm(nn.Module):

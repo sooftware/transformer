@@ -13,7 +13,7 @@ class PositionalEncoding(nn.Module):
         PE_(pos, 2i)    =  sin(pos / power(10000, 2i / d_model))
         PE_(pos, 2i+1)  =  cos(pos / power(10000, 2i / d_model))
     """
-    def __init__(self, d_model, dropout=0.1, max_len=5000):
+    def __init__(self, d_model: int = 512, dropout: float = 0.1, max_len: int = 5000):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
 
@@ -25,7 +25,7 @@ class PositionalEncoding(nn.Module):
         pe = pe.unsqueeze(0).transpose(0, 1)
         self.register_buffer('pe', pe)
 
-    def forward(self, embedded):
+    def forward(self, embedded: torch.Tensor):
         embedded += self.pe[:embedded.size(0), :]
         return self.dropout(embedded)
 

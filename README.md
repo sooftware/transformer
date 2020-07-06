@@ -5,36 +5,34 @@ This repository focused on implementing the contents of the paper as much as pos
   
 <img src="https://tutorials.pytorch.kr/_images/transformer_architecture.jpg" height=700>  
   
-## Intro
+## Intro 
   
-## Prerequisites
-  
-* Python 3.6+
-* Numpy: `pip install numpy` (Refer [here](https://github.com/numpy/numpy) for problem installing Numpy).
-* Pytorch: Refer to [PyTorch website](http://pytorch.org/) to install the version w.r.t. your environment.   
-  
+`PyTorch Transformer` is repository for deep learning researcher. This repository focused on implementing the contents of the paper as much as possible, while at the same time striving for a readable code.   
+ To improve readability, I designed the model structure to fit as much as possible to the blocks in the above Transformers figure.
+
 ## Troubleshoots and Contributing
 If you have any questions, bug reports, and feature requests, please [open an issue](https://github.com/sooftware/PyTorch-Transformer/issues) on Github.   
 Or Contacts sh951011@gmail.com please.
   
 I appreciate any kind of feedback or contribution.  Feel free to proceed with small issues like bug fixes, documentation improvement.  For major contributions and new features, please discuss with the collaborators in corresponding issues.  
+  
+## Dependencies
+  
+* Python 3.6+
+* Numpy: `pip install numpy` (Refer [here](https://github.com/numpy/numpy) for problem installing Numpy).
+* Pytorch: Refer to [PyTorch website](http://pytorch.org/) to install the version w.r.t. your environment.  
 
+## TODO  
+  
+* Add toy example
+* Extending to speech recognition version 
+  
 ### Code Style
 I follow [PEP-8](https://www.python.org/dev/peps/pep-0008/) for code style. Especially the style of docstrings is important to generate documentation.  
-    
-### References
   
-Ashish Vaswani et al. [Attention Is All You Need](https://arxiv.org/abs/1706.03762) arXiv: 1706.03762     
+## Author
   
-## Citing
-  
-```
-@github{
-    title = {PyTorch Transformer},
-    author = {Soohwan Kim},
-    publisher = {GitHub},
-    url = {https://github.com/sooftware/PyTorch-Transformer},
-    year = {2020}
-}
-```
+* Soohwan Kim [@sooftware](https://github.com/sooftware)
+* Contacts: sh951011@gmail.com
+
 .

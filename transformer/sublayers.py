@@ -49,10 +49,10 @@ class ScaledDotProductAttention(nn.Module):
     """
     def __init__(self, dim: int):
         super(ScaledDotProductAttention, self).__init__()
-        self.dim = dim
+        self.sqrt_dim = np.sqrt(dim)
 
     def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, mask: Optional[torch.Tensor] = None):
-        score = torch.bmm(query, key.transpose(1, 2)) / np.sqrt(self.dim)
+        score = torch.bmm(query, key.transpose(1, 2)) / self.sqrt_dim
 
         if mask is not None:
             score.masked_fill_(mask, -float('Inf'))

@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from transformer.sublayers import MultiHeadAttention, PoswiseFeedForwardNet, AddNorm
 
@@ -12,7 +13,7 @@ class TransformerEncoderLayer(nn.Module):
         self.self_attention = AddNorm(MultiHeadAttention(d_model, num_heads), d_model)
         self.feed_forward = AddNorm(PoswiseFeedForwardNet(d_model, d_ff, dropout_p, mode), d_model)
 
-    def forward(self, inputs, inputs_mask):
+    def forward(self, inputs: torch.Tensor, inputs_mask: torch.Tensor):
         output, attn = self.self_attention(inputs, inputs, inputs, inputs_mask)
         output = self.feed_forward(output)
         return output, attn
@@ -29,7 +30,7 @@ class TransformerDecoderLayer(nn.Module):
         self.encoder_attention = AddNorm(MultiHeadAttention(d_model, num_heads), d_model)
         self.feed_forward = AddNorm(PoswiseFeedForwardNet(d_model, d_ff, dropout_p, mode), d_model)
 
-    def forward(self, inputs, memory, inputs_mask, memory_mask):
+    def forward(self, inputs: torch.Tensor, memory: torch.Tensor, inputs_mask: torch.Tensor, memory_mask: torch.Tensor):
         output, self_attn = self.self_attention(inputs, inputs, inputs, inputs_mask)
         output, encoder_attn = self.encoder_attention(output, memory, memory, memory_mask)
         output = self.feed_forward(output)
