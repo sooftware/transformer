@@ -1,16 +1,13 @@
 """
-@github{
-    title = {PyTorch Transformer},
-    author = {Soohwan Kim},
-    pyblisher = {GitHub},
-    url = {https://github.com/sooftware/PyTorch-Transformer},
-    year = {2020}
-}
+Author:
+    - **Soohwan Kim @sooftware**
+    - **Email: sh951011@gmail.com**
 
-Reference : https://github.com/graykode/nlp-tutorial
-            https://github.com/dreamgonfly/transformer-pytorch
-            https://github.com/jadore801120/attention-is-all-you-need-pytorch
-            https://github.com/JayParks/transformer
+Reference :
+    - **https://github.com/graykode/nlp-tutorial**
+    - **https://github.com/dreamgonfly/transformer-pytorch**
+    - **https://github.com/jadore801120/attention-is-all-you-need-pytorch**
+    - **https://github.com/JayParks/transformer**
 """
 import torch
 import torch.nn as nn
