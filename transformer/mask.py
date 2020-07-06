@@ -12,6 +12,8 @@ def subsequent_masking(x: torch.Tensor):
     """
     Makes subsequent masking like following:
 
+    Examples::
+        >>> subsequent_mask(x)
         [[0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
          [0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
          [0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
