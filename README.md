@@ -21,8 +21,9 @@ I appreciate any kind of feedback or contribution.  Feel free to proceed with sm
 ## Dependencies
   
 * Python 3.6+
-* Numpy: `pip install numpy` (Refer [here](https://github.com/numpy/numpy) for problem installing Numpy).
-* Pytorch: Refer to [PyTorch website](http://pytorch.org/) to install the version w.r.t. your environment.  
+* Numpy
+* Pytorch
+* Torchtext
 
 ## TODO  
   
