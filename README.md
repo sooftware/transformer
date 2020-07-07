@@ -8,7 +8,9 @@ This repository focused on implementing the contents of the paper as much as pos
   
 <img src="https://tutorials.pytorch.kr/_images/transformer_architecture.jpg" height=700>  
   
-`Transformer-pytorch` is repository for deep learning researcher. This repository focused on implementing the contents of the paper as much as possible, while at the same time striving for a readable code. To improve readability,    
+`Transformer-pytorch` is repository for deep learning researcher.   
+This repository focused on implementing the contents of the paper as much as possible,   
+while at the same time striving for a readable code. To improve readability,      
 I designed the model structure to fit as much as possible to the blocks in the above Transformers figure.
   
 ## Get Started
