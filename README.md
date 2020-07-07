@@ -6,7 +6,7 @@ This repository focused on implementing the contents of the paper as much as pos
   
 ## Intro 
   
-<img src="https://tutorials.pytorch.kr/_images/transformer_architecture.jpg" height=700>  
+<img src="https://tutorials.pytorch.kr/_images/transformer_architecture.jpg" height=500>  
   
 `Transformer-pytorch` is repository for deep learning researcher.   
 This repository focused on implementing the contents of the paper as much as possible,   
