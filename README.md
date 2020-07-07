@@ -22,12 +22,7 @@ $ generate_toy_data.sh --dir ../data --max_len 10
   
 ### Train and play
 ```
-TRAIN_PATH=data/toy_reverse/train/data.txt
-DEV_PATH=data/toy_reverse/dev/data.txt
-EXPT_DIR=data/checkpoints/
-
-# Start training
-python toy_problem/main.py --train_path $TRAIN_PATH --dev_path $DEV_PATH --expt_dir $EXPT_DIR
+$ run.sh --d_model 512 --num_heads 8 --d_ff 2048
 ```
   
 TODO: be in the process of implementation !!  
