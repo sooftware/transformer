@@ -10,7 +10,49 @@ This repository focused on implementing the contents of the paper as much as pos
   
 `Transformer-pytorch` is repository for deep learning researcher. This repository focused on implementing the contents of the paper as much as possible, while at the same time striving for a readable code. To improve readability,    
 I designed the model structure to fit as much as possible to the blocks in the above Transformers figure.
+  
+## Get Started
+  
+The toy problem is brought from [IBM/pytorch-seq2seq](https://github.com/IBM/pytorch-seq2seq).  
+  
+### Prepare toy dataset  
+```
+$ generate_toy_data.sh --dir ../data --max_len 10
+```  
+  
+### Train and play
+```
+TRAIN_PATH=data/toy_reverse/train/data.txt
+DEV_PATH=data/toy_reverse/dev/data.txt
+EXPT_DIR=data/checkpoints/
 
+# Start training
+python toy_problem/main.py --train_path $TRAIN_PATH --dev_path $DEV_PATH --expt_dir $EXPT_DIR
+```
+  
+TODO: be in the process of implementation !!  
+  
+Once training is complete, you will be prompted to enter a new sequence to translate and the model will print out its prediction (use ctrl-C to terminate). Try the example below!  
+  
+```
+Input: 1 3 5 7 9
+Expected output: 9 7 5 3 1 <eos>
+```
+  
+### Checkpoints  
+Checkpoints are organized by experiments and timestamps as shown in the following file structure  
+```
+experiment_dir
++-- input_vocab
++-- output_vocab
++-- checkpoints
+|  +-- YYYY_mm_dd_HH_MM_SS
+   |  +-- decoder
+   |  +-- encoder
+   |  +-- model_checkpoint
+```  
+The sample script by default saves checkpoints in the `experiment` folder of the root directory. Look at the usages of the sample code for more options, including resuming and loading from checkpoints.
+  
 ## Troubleshoots and Contributing
   
 If you have any questions, bug reports, and feature requests, please [open an issue](https://github.com/sooftware/ransformer-pytorch/issues) on Github.   
