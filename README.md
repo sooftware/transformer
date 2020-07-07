@@ -23,11 +23,10 @@ I appreciate any kind of feedback or contribution.  Feel free to proceed with sm
 * Python 3.6+
 * Numpy
 * Pytorch
-* Torchtext
 
 ## TODO  
   
-* Add toy example
+* Add toy problem (examples)
 * Extending to speech recognition version 
   
 ### Code Style
