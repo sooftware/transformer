@@ -4,9 +4,9 @@
 A PyTorch Implementation of Transformer in [Attention Is All You Need](https://arxiv.org/abs/1706.03762).  
 This repository focused on implementing the contents of the paper as much as possible.  
   
-<img src="https://tutorials.pytorch.kr/_images/transformer_architecture.jpg" height=700>  
-  
 ## Intro 
+  
+<img src="https://tutorials.pytorch.kr/_images/transformer_architecture.jpg" height=700>  
   
 `Transformer-pytorch` is repository for deep learning researcher. This repository focused on implementing the contents of the paper as much as possible, while at the same time striving for a readable code. To improve readability,    
 I designed the model structure to fit as much as possible to the blocks in the above Transformers figure.
