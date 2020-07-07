@@ -27,7 +27,7 @@ $ generate_toy_data.sh --dir ../data --max_len 10
 $ toy.sh --d_model 512 --num_heads 8 --d_ff 2048
 ```
   
-**TODO: be in the process of implementation !! **   
+**TODO: be in the process of implementation !!**     
   
 Once training is complete, you will be prompted to enter a new sequence to translate and the model will print out its prediction (use ctrl-C to terminate). Try the example below!  
   
