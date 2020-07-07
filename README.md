@@ -1,4 +1,4 @@
-[<img src="http://img.shields.io/badge/Documentation-passing-c2e4f7?logo=Read%20the%20Docs&logoColor=white">](https://sooftware.github.io/Transformer-pytorch/) <img src="http://img.shields.io/badge/License-Apache--2.0-c2e4f7">
+[<img src="http://img.shields.io/badge/Documentation-passing-9cf">](https://sooftware.github.io/Transformer-pytorch/) <img src="http://img.shields.io/badge/License-Apache--2.0-9cf">
 # Transformer-pytorch
   
 A PyTorch Implementation of Transformer in [Attention Is All You Need](https://arxiv.org/abs/1706.03762).  
