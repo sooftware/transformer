@@ -26,7 +26,7 @@ def subsequent_masking(x: torch.Tensor):
          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]] x batch_size
     """
     batch_size, seq_length = x.size()
-    subsequent_mask = np.triu(np.ones(shape=(seq_length, seq_length)), k=1).astype('uint8')  # make lower triangle
+    subsequent_mask = np.triu(np.ones(shape=(seq_length, seq_length)), k=1).astype('bool')  # make lower triangle
     subsequent_mask = torch.tensor(subsequent_mask).to(x.device)
     subsequent_mask = subsequent_mask.unsqueeze(0).expand(batch_size, seq_length, seq_length)
     return subsequent_mask

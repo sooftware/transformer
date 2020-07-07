@@ -1,4 +1,5 @@
-# PyTorch Transformer
+[<img src="http://img.shields.io/badge/Documentation-passing-c2e4f7?logo=Read%20the%20Docs&logoColor=white">](https://sooftware.github.io/Transformer-pytorch/) <img src="http://img.shields.io/badge/License-Apache--2.0-c2e4f7">
+# Transformer-pytorch
   
 A PyTorch Implementation of Transformer in [Attention Is All You Need](https://arxiv.org/abs/1706.03762).  
 This repository focused on implementing the contents of the paper as much as possible.  
@@ -7,12 +8,12 @@ This repository focused on implementing the contents of the paper as much as pos
   
 ## Intro 
   
-`PyTorch Transformer` is repository for deep learning researcher. This repository focused on implementing the contents of the paper as much as possible, while at the same time striving for a readable code.   
- To improve readability, I designed the model structure to fit as much as possible to the blocks in the above Transformers figure.
+`Transformer-pytorch` is repository for deep learning researcher. This repository focused on implementing the contents of the paper as much as possible, while at the same time striving for a readable code. To improve readability,    
+I designed the model structure to fit as much as possible to the blocks in the above Transformers figure.
 
 ## Troubleshoots and Contributing
   
-If you have any questions, bug reports, and feature requests, please [open an issue](https://github.com/sooftware/PyTorch-Transformer/issues) on Github.   
+If you have any questions, bug reports, and feature requests, please [open an issue](https://github.com/sooftware/ransformer-pytorch/issues) on Github.   
 Or Contacts sh951011@gmail.com please.
   
 I appreciate any kind of feedback or contribution.  Feel free to proceed with small issues like bug fixes, documentation improvement.  For major contributions and new features, please discuss with the collaborators in corresponding issues.  
@@ -20,12 +21,12 @@ I appreciate any kind of feedback or contribution.  Feel free to proceed with sm
 ## Dependencies
   
 * Python 3.6+
-* Numpy: `pip install numpy` (Refer [here](https://github.com/numpy/numpy) for problem installing Numpy).
-* Pytorch: Refer to [PyTorch website](http://pytorch.org/) to install the version w.r.t. your environment.  
+* Numpy
+* Pytorch
 
 ## TODO  
   
-* Add toy example
+* Add toy problem (examples)
 * Extending to speech recognition version 
   
 ### Code Style

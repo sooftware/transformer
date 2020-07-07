@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from typing import Optional
-from transformer.modules import Linear, LayerNorm
+from transformer.models.modules import Linear, LayerNorm
 
 
 class AddNorm(nn.Module):
@@ -55,7 +55,7 @@ class ScaledDotProductAttention(nn.Module):
         score = torch.bmm(query, key.transpose(1, 2)) / self.sqrt_dim
 
         if mask is not None:
-            score.masked_fill_(mask, -float('Inf'))
+            score.masked_fill_(mask.view(score.size()), -float('Inf'))
 
         attn = F.softmax(score, -1)
         context = torch.bmm(attn, value)
@@ -142,10 +142,10 @@ class PoswiseFeedForwardNet(nn.Module):
     This consists of two linear transformations with a ReLU activation in between.
     Another way of describing this is as two convolutions with kernel size 1.
     """
-    def __init__(self, d_model: int = 512, d_ff: int = 2048, dropout_p: float = 0.3, mode: str = 'feed_forward'):
+    def __init__(self, d_model: int = 512, d_ff: int = 2048, dropout_p: float = 0.3, ffnet_style: str = 'feed_forward'):
         super(PoswiseFeedForwardNet, self).__init__()
-        self.mode = mode.lower()
-        if self.mode == 'ff':
+        self.ffnet_style = ffnet_style.lower()
+        if self.ffnet_style == 'ff':
             self.feed_forward = nn.Sequential(
                 Linear(d_model, d_ff),
                 nn.Dropout(dropout_p),
@@ -154,7 +154,7 @@ class PoswiseFeedForwardNet(nn.Module):
                 nn.Dropout(dropout_p)
             )
 
-        elif self.mode == 'conv':
+        elif self.ffnet_style == 'conv':
             self.conv1 = nn.Conv1d(in_channels=d_model, out_channels=d_ff, kernel_size=1)
             self.relu = nn.ReLU()
             self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model, kernel_size=1)
@@ -163,7 +163,7 @@ class PoswiseFeedForwardNet(nn.Module):
             raise ValueError("Unsupported mode: {0}".format(self.mode))
 
     def forward(self, inputs: torch.Tensor):
-        if self.mode == 'ff':
+        if self.ffnet_style == 'ff':
             output = self.feed_forward(inputs)
 
         else:

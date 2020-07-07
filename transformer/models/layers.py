@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from transformer.sublayers import MultiHeadAttention, PoswiseFeedForwardNet, AddNorm
+from transformer.models.sublayers import MultiHeadAttention, PoswiseFeedForwardNet, AddNorm
 
 
 class TransformerEncoderLayer(nn.Module):
@@ -8,10 +8,11 @@ class TransformerEncoderLayer(nn.Module):
     EncoderLayer is made up of self-attention and feedforward network.
     This standard encoder layer is based on the paper "Attention Is All You Need".
     """
-    def __init__(self, d_model: int = 512, num_heads: int = 8, d_ff: int = 2048, dropout_p: float = 0.3, mode: str = 'ff'):
+    def __init__(self, d_model: int = 512, num_heads: int = 8, d_ff: int = 2048,
+                 dropout_p: float = 0.3, ffnet_style: str = 'ff'):
         super(TransformerEncoderLayer, self).__init__()
         self.self_attention = AddNorm(MultiHeadAttention(d_model, num_heads), d_model)
-        self.feed_forward = AddNorm(PoswiseFeedForwardNet(d_model, d_ff, dropout_p, mode), d_model)
+        self.feed_forward = AddNorm(PoswiseFeedForwardNet(d_model, d_ff, dropout_p, ffnet_style), d_model)
 
     def forward(self, inputs: torch.Tensor, inputs_mask: torch.Tensor):
         output, attn = self.self_attention(inputs, inputs, inputs, inputs_mask)
@@ -24,11 +25,12 @@ class TransformerDecoderLayer(nn.Module):
     DecoderLayer is made up of self-attention, multi-head attention and feedforward network.
     This standard decoder layer is based on the paper "Attention Is All You Need".
     """
-    def __init__(self, d_model: int = 512, num_heads: int = 8, d_ff: int = 2048,  dropout_p: float = 0.3, mode: str = 'ff'):
+    def __init__(self, d_model: int = 512, num_heads: int = 8, d_ff: int = 2048,
+                 dropout_p: float = 0.3, ffnet_style: str = 'ff'):
         super(TransformerDecoderLayer, self).__init__()
         self.self_attention = AddNorm(MultiHeadAttention(d_model, num_heads), d_model)
         self.encoder_attention = AddNorm(MultiHeadAttention(d_model, num_heads), d_model)
-        self.feed_forward = AddNorm(PoswiseFeedForwardNet(d_model, d_ff, dropout_p, mode), d_model)
+        self.feed_forward = AddNorm(PoswiseFeedForwardNet(d_model, d_ff, dropout_p, ffnet_style), d_model)
 
     def forward(self, inputs: torch.Tensor, memory: torch.Tensor, inputs_mask: torch.Tensor, memory_mask: torch.Tensor):
         output, self_attn = self.self_attention(inputs, inputs, inputs, inputs_mask)
