@@ -26,7 +26,7 @@ I appreciate any kind of feedback or contribution.  Feel free to proceed with sm
 
 ## TODO  
   
-* Add toy problem (examples)
+* Implements Evaluator & Predictor
 * Extending to speech recognition version 
   
 ### Code Style
