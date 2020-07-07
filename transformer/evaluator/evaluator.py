@@ -48,13 +48,13 @@ class Evaluator(object):
                 encoder_inputs, _ = getattr(batch, 'src')
                 targets = getattr(batch, 'tgt')
 
-                enc_outputs, enc_self_attns = self.model.encoder(encoder_inputs)
+                enc_outputs, enc_self_attns = model.encoder(encoder_inputs)
                 decoder_inputs = torch.zeros(1, 5).type_as(encoder_inputs.data)
                 next_symbol = tgt_vocab.stoi['<sos>']
 
                 for i in range(self.max_length):
                     decoder_inputs[0][i] = next_symbol
-                    decoder_outputs = self.model.decoder(decoder_inputs, encoder_inputs, enc_outputs)[0]
+                    decoder_outputs = model.decoder(decoder_inputs, encoder_inputs, enc_outputs)[0]
                     projected = model.linear(decoder_outputs)
                     prob = projected.squeeze(0).max(dim=-1, keepdim=False)[1]
                     next_word = prob.data[i]

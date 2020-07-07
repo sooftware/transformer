@@ -22,7 +22,7 @@ $ generate_toy_data.sh --dir ../data --max_len 10
   
 ### Train and play
 ```
-$ run.sh --d_model 512 --num_heads 8 --d_ff 2048
+$ toy.sh --d_model 512 --num_heads 8 --d_ff 2048
 ```
   
 TODO: be in the process of implementation !!  
