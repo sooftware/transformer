@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Optional
+from torch import Tensor
+from typing import Optional, Tuple
 from transformer.models.modules import Linear, LayerNorm
 
 
@@ -12,7 +13,7 @@ class AddNorm(nn.Module):
     Transformer employ a residual connection around each of the two sub-layers,
     (Multi-Head Attention & Feed-Forward) followed by layer normalization.
     """
-    def __init__(self, sublayer: nn.Module, d_model: int = 512):
+    def __init__(self, sublayer: nn.Module, d_model: int = 512) -> None:
         super(AddNorm, self).__init__()
         self.sublayer = sublayer
         self.layer_norm = LayerNorm(d_model)
@@ -47,11 +48,11 @@ class ScaledDotProductAttention(nn.Module):
         - **context**: tensor containing the context vector from attention mechanism.
         - **attn**: tensor containing the attention (alignment) from the encoder outputs.
     """
-    def __init__(self, dim: int):
+    def __init__(self, dim: int) -> None:
         super(ScaledDotProductAttention, self).__init__()
         self.sqrt_dim = np.sqrt(dim)
 
-    def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, mask: Optional[torch.Tensor] = None):
+    def forward(self, query: Tensor, key: Tensor, value: Tensor, mask: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:
         score = torch.bmm(query, key.transpose(1, 2)) / self.sqrt_dim
 
         if mask is not None:
@@ -100,7 +101,7 @@ class MultiHeadAttention(nn.Module):
         - **output** (batch, output_len, dimensions): tensor containing the attended output features.
         - **attn** (batch * num_heads, v_len): tensor containing the attention (alignment) from the encoder outputs.
     """
-    def __init__(self, d_model: int = 512, num_heads: int = 8):
+    def __init__(self, d_model: int = 512, num_heads: int = 8) -> None:
         super(MultiHeadAttention, self).__init__()
 
         assert d_model % num_heads == 0, "d_model % num_heads should be zero."
@@ -113,7 +114,7 @@ class MultiHeadAttention(nn.Module):
         self.linear_v = Linear(d_model, self.d_head * num_heads)
         self.linear = Linear(d_model, d_model)
 
-    def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, mask: Optional[torch.Tensor] = None):
+    def forward(self, query: Tensor, key: Tensor, value: Tensor, mask: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:
         batch_size = value.size(0)
 
         query = self.linear_q(query).view(batch_size, -1, self.num_heads, self.d_head)  # BxQ_LENxNxD
@@ -142,7 +143,8 @@ class PoswiseFeedForwardNet(nn.Module):
     This consists of two linear transformations with a ReLU activation in between.
     Another way of describing this is as two convolutions with kernel size 1.
     """
-    def __init__(self, d_model: int = 512, d_ff: int = 2048, dropout_p: float = 0.3, ffnet_style: str = 'feed_forward'):
+    def __init__(self, d_model: int = 512, d_ff: int = 2048,
+                 dropout_p: float = 0.3, ffnet_style: str = 'feed_forward') -> None:
         super(PoswiseFeedForwardNet, self).__init__()
         self.ffnet_style = ffnet_style.lower()
         if self.ffnet_style == 'ff':
@@ -162,7 +164,7 @@ class PoswiseFeedForwardNet(nn.Module):
         else:
             raise ValueError("Unsupported mode: {0}".format(self.mode))
 
-    def forward(self, inputs: torch.Tensor):
+    def forward(self, inputs: Tensor) -> Tensor:
         if self.ffnet_style == 'ff':
             output = self.feed_forward(inputs)
 

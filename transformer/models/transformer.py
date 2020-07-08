@@ -9,13 +9,13 @@ Reference :
     - **https://github.com/jadore801120/attention-is-all-you-need-pytorch**
     - **https://github.com/JayParks/transformer**
 """
-import torch
 import torch.nn as nn
+from torch import Tensor
+from typing import Optional, Tuple
 from transformer.models.modules import Linear
 from transformer.models.mask import subsequent_masking, pad_masking
 from transformer.models.embeddings import Embedding, PositionalEncoding
 from transformer.models.layers import TransformerEncoderLayer, TransformerDecoderLayer
-from typing import Optional
 
 
 class Transformer(nn.Module):
@@ -47,7 +47,7 @@ class Transformer(nn.Module):
     def __init__(self, num_classes: int, pad_id: int, num_input_embeddings: int, num_output_embeddings: int,
                  d_model: int = 512, d_ff: int = 2048, num_heads: int = 8,
                  num_encoder_layers: int = 6, num_decoder_layers: int = 6,
-                 dropout_p: float = 0.3, ffnet_style: str = 'ff'):
+                 dropout_p: float = 0.3, ffnet_style: str = 'ff') -> None:
         super(Transformer, self).__init__()
         self.pad_id = pad_id
         self.encoder = TransformerEncoder(
@@ -70,7 +70,7 @@ class Transformer(nn.Module):
         )
         self.linear = Linear(d_model, num_classes)
 
-    def forward(self, inputs: torch.Tensor, targets: Optional[torch.Tensor]):
+    def forward(self, inputs: Tensor, targets: Optional[Tensor]) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         input_length, target_length = inputs.size(1), targets.size(1)
 
         inputs_mask = pad_masking(inputs, input_length, self.pad_id)
@@ -92,7 +92,7 @@ class TransformerEncoder(nn.Module):
     """
     def __init__(self, num_embeddings: int, d_model: int = 512, d_ff: int = 2048,
                  num_layers: int = 6, num_heads: int = 8, ffnet_style: str = 'ff',
-                 dropout_p: float = 0.3, pad_id: int = 0):
+                 dropout_p: float = 0.3, pad_id: int = 0) -> None:
         super(TransformerEncoder, self).__init__()
         self.d_model = d_model
         self.num_layers = num_layers
@@ -104,7 +104,7 @@ class TransformerEncoder(nn.Module):
             [TransformerEncoderLayer(d_model, num_heads, d_ff, dropout_p, ffnet_style) for _ in range(num_layers)]
         )
 
-    def forward(self, inputs: torch.Tensor, inputs_mask: torch.Tensor):
+    def forward(self, inputs: Tensor, inputs_mask: Tensor) -> Tuple[Tensor, Tensor]:
         self_attns = list()
         output = None
 
@@ -125,9 +125,9 @@ class TransformerDecoder(nn.Module):
     Each layer has three sub-layers. The first is a multi-head self-attention mechanism,
     and the second is a multi-head attention mechanism, third is a feed-forward network.
     """
-    def __init__(self, num_embeddings, d_model: int = 512, d_ff: int = 512,
+    def __init__(self, num_embeddings: int, d_model: int = 512, d_ff: int = 512,
                  num_layers: int = 6, num_heads: int = 8, ffnet_style: str = 'ff',
-                 dropout_p: float = 0.3, pad_id: int = 0):
+                 dropout_p: float = 0.3, pad_id: int = 0) -> None:
         super(TransformerDecoder, self).__init__()
         self.d_model = d_model
         self.num_layers = num_layers
@@ -138,7 +138,8 @@ class TransformerDecoder(nn.Module):
             [TransformerDecoderLayer(d_model, num_heads, d_ff,  dropout_p, ffnet_style) for _ in range(num_layers)]
         )
 
-    def forward(self, inputs, memory, inputs_mask, memory_mask):
+    def forward(self, inputs: Tensor, memory: Tensor,  inputs_mask: Optional[Tensor] = None,
+                memory_mask: Optional[Tensor] = None) -> Tuple[Tensor, Tensor, Tensor]:
         self_attns, encoder_attns = list(), list()
         output = None
 

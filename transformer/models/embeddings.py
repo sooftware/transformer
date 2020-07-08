@@ -1,6 +1,7 @@
 import math
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 
 class PositionalEncoding(nn.Module):
@@ -13,7 +14,7 @@ class PositionalEncoding(nn.Module):
         PE_(pos, 2i)    =  sin(pos / power(10000, 2i / d_model))
         PE_(pos, 2i+1)  =  cos(pos / power(10000, 2i / d_model))
     """
-    def __init__(self, d_model: int = 512, dropout_p: float = 0.1, max_len: int = 5000):
+    def __init__(self, d_model: int = 512, dropout_p: float = 0.1, max_len: int = 5000) -> None:
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(dropout_p)
 
@@ -25,7 +26,7 @@ class PositionalEncoding(nn.Module):
         pe = pe.unsqueeze(0).transpose(0, 1)
         self.register_buffer('pe', pe)
 
-    def forward(self, embedded: torch.Tensor):
+    def forward(self, embedded: Tensor) -> Tensor:
         embedded += self.pe[:embedded.size(0), :]
         return self.dropout(embedded)
 
@@ -36,10 +37,10 @@ class Embedding(nn.Module):
     to convert the input tokens and output tokens to vectors of dimension d_model.
     In the embedding layers, transformer multiply those weights by sqrt(d_model)
     """
-    def __init__(self, num_embeddings: int, pad_id: int, d_model: int = 512):
+    def __init__(self, num_embeddings: int, pad_id: int, d_model: int = 512) -> Tensor:
         super(Embedding, self).__init__()
         self.sqrt_dim = math.sqrt(d_model)
         self.embedding = nn.Embedding(num_embeddings, d_model, padding_idx=pad_id)
 
-    def forward(self, inputs: torch.Tensor):
+    def forward(self, inputs: Tensor) -> Tensor:
         return self.embedding(inputs) * self.sqrt_dim

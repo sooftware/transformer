@@ -131,7 +131,7 @@ if __name__ == '__main__':
                               checkpoint_every=5000,
                               print_every=10, expt_dir=opt.expt_dir)
 
-        model = t.train(model, train, num_epochs=3, dev_data=dev, optimizer=optimizer, resume=opt.resume)
+        model = t.train(model, train, num_epochs=1, dev_data=dev, optimizer=optimizer, resume=opt.resume)
 
     predictor = Predictor(model, input_vocab, output_vocab)
 

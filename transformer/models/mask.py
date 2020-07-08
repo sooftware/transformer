@@ -1,14 +1,15 @@
 import torch
 import numpy as np
+from torch import Tensor
 
 
-def pad_masking(x: torch.Tensor, target_length: int, pad_id: int):
+def pad_masking(x: Tensor, target_length: int, pad_id: int) -> Tensor:
     batch_size, seq_length = x.size()
     pad_indices = x == pad_id
     return pad_indices.unsqueeze(1).expand(batch_size, target_length, seq_length)
 
 
-def subsequent_masking(x: torch.Tensor):
+def subsequent_masking(x: Tensor) -> Tensor:
     """
     Makes subsequent masking like following:
 

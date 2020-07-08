@@ -1,14 +1,16 @@
-[<img src="http://img.shields.io/badge/Documentation-passing-c2e4f7?logo=Read%20the%20Docs&logoColor=white">](https://sooftware.github.io/Transformer-pytorch/) <img src="http://img.shields.io/badge/License-Apache--2.0-c2e4f7">
+[<img src="http://img.shields.io/badge/Documentation-passing-9cf">](https://sooftware.github.io/Transformer-pytorch/) <img src="http://img.shields.io/badge/License-Apache--2.0-9cf">
 # Transformer-pytorch
   
 A PyTorch Implementation of Transformer in [Attention Is All You Need](https://arxiv.org/abs/1706.03762).  
 This repository focused on implementing the contents of the paper as much as possible.  
   
-<img src="https://tutorials.pytorch.kr/_images/transformer_architecture.jpg" height=700>  
-  
 ## Intro 
   
-`Transformer-pytorch` is repository for deep learning researcher. This repository focused on implementing the contents of the paper as much as possible, while at the same time striving for a readable code. To improve readability,    
+<img src="https://tutorials.pytorch.kr/_images/transformer_architecture.jpg" height=500>  
+  
+`Transformer-pytorch` is repository for deep learning researcher.   
+This repository focused on implementing the contents of the paper as much as possible,   
+while at the same time striving for a readable code. To improve readability,      
 I designed the model structure to fit as much as possible to the blocks in the above Transformers figure.
   
 ## Get Started
@@ -25,7 +27,7 @@ $ generate_toy_data.sh --dir ../data --max_len 10
 $ toy.sh --d_model 512 --num_heads 8 --d_ff 2048
 ```
   
-TODO: be in the process of implementation !!  
+**TODO: be in the process of implementation !!**     
   
 Once training is complete, you will be prompted to enter a new sequence to translate and the model will print out its prediction (use ctrl-C to terminate). Try the example below!  
   
