@@ -27,6 +27,7 @@ class Predictor(object):
         For simplicity, a Greedy Decoder is Beam search when K=1. This is necessary for inference as we don't know the
         target sequence input. Therefore we try to generate the target input word by word, then feed it into the transformer.
         Starting Reference: http://nlp.seas.harvard.edu/2018/04/03/attention.html#greedy-decoding
+
         :param encoder_inputs: The encoder input
         :param sos_id: The start symbol. In this example it is 'S' which corresponds to index 4
         :return: The target input

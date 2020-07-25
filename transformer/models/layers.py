@@ -1,7 +1,6 @@
-import torch
 import torch.nn as nn
 from torch import Tensor
-from typing import Tuple
+from typing import Tuple, Optional
 from transformer.models.sublayers import MultiHeadAttention, PoswiseFeedForwardNet, AddNorm
 
 
@@ -16,9 +15,18 @@ class TransformerEncoderLayer(nn.Module):
         self.self_attention = AddNorm(MultiHeadAttention(d_model, num_heads), d_model)
         self.feed_forward = AddNorm(PoswiseFeedForwardNet(d_model, d_ff, dropout_p, ffnet_style), d_model)
 
-    def forward(self, inputs: Tensor, inputs_mask: Tensor) -> Tuple[Tensor, Tensor]:
-        output, attn = self.self_attention(inputs, inputs, inputs, inputs_mask)
+    def forward(self, inputs: Tensor, non_pad_mask: Optional[Tensor] = None,
+                self_attn_mask: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:
+        output, attn = self.self_attention(inputs, inputs, inputs, self_attn_mask)
+
+        if non_pad_mask is not None:
+            output *= non_pad_mask
+
         output = self.feed_forward(output)
+
+        if non_pad_mask is not None:
+            output *= non_pad_mask
+
         return output, attn
 
 
@@ -35,8 +43,22 @@ class TransformerDecoderLayer(nn.Module):
         self.feed_forward = AddNorm(PoswiseFeedForwardNet(d_model, d_ff, dropout_p, ffnet_style), d_model)
 
     def forward(self, inputs: Tensor, memory: Tensor,
-                inputs_mask: Tensor, memory_mask: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
-        output, self_attn = self.self_attention(inputs, inputs, inputs, inputs_mask)
-        output, encoder_attn = self.encoder_attention(output, memory, memory, memory_mask)
+                non_pad_mask: Tensor = None,
+                self_attn_mask: Tensor = None, memory_mask: Tensor = None) -> Tuple[Tensor, Tensor, Tensor]:
+        output, self_attn = self.self_attention(inputs, inputs, inputs, self_attn_mask)
+
+        if non_pad_mask is not None:
+            output *= non_pad_mask
+
+        output, memory_attn = self.memory_attention(output, memory, memory, memory_mask)
+
+        if non_pad_mask is not None:
+            output *= non_pad_mask
+
         output = self.feed_forward(output)
-        return output, self_attn, encoder_attn
+
+        if non_pad_mask is not None:
+            output *= non_pad_mask
+
+        return output, self_attn, memory_attn
+

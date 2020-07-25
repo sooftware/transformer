@@ -5,11 +5,11 @@ import torch
 import torchtext
 import sys
 import warnings
+import torch.nn as nn
 sys.path.append('..')
 from transformer.checkpoint.checkpoint import Checkpoint
 from transformer.dataset.field import SourceField, TargetField
-from transformer.evaluator.predictor import Predictor
-from transformer.loss.loss import Perplexity, NLLLoss
+from transformer.predictor.predictor import Predictor
 from transformer.models.transformer import Transformer
 from transformer.trainer.supervised_trainer import SupervisedTrainer
 
@@ -17,11 +17,11 @@ from transformer.trainer.supervised_trainer import SupervisedTrainer
 if __name__ == '__main__':
     warnings.filterwarnings('ignore')
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_path', action='store', dest='train_path',
+    parser.add_argument('--train_path', action='store', dest='train_path', default='../data/toy_reverse/train/data.txt',
                         help='Path to train data')
-    parser.add_argument('--dev_path', action='store', dest='dev_path',
+    parser.add_argument('--dev_path', action='store', dest='dev_path', default='../data/toy_reverse/dev/data.txt',
                         help='Path to dev data')
-    parser.add_argument('--expt_dir', action='store', dest='expt_dir', default='./experiment',
+    parser.add_argument('--expt_dir', action='store', dest='expt_dir', default='../data/checkpoints/',
                         help='Path to experiment directory. '
                              'If load_checkpoint is True, then path to checkpoint directory has to be provided')
     parser.add_argument('--load_checkpoint', action='store', dest='load_checkpoint',
@@ -53,7 +53,6 @@ if __name__ == '__main__':
     parser.add_argument('--ffnet_style', type=str,
                         default='ff',
                         help='position-wise feed forward network style [ff, conv]')
-
     opt = parser.parse_args()
 
     LOG_FORMAT = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
@@ -102,9 +101,9 @@ if __name__ == '__main__':
         # Prepare loss
         weight = torch.ones(len(tgt.vocab))
         pad_id = tgt.vocab.stoi[tgt.pad_token]
-        loss = NLLLoss(weight, pad_id)
+        criterion = nn.NLLLoss(weight, pad_id)
         if torch.cuda.is_available():
-            loss.cuda()
+            criterion.cuda()
 
         model = None
         optimizer = None
@@ -119,15 +118,8 @@ if __name__ == '__main__':
             for param in model.parameters():
                 param.data.uniform_(-0.08, 0.08)
 
-            # Optimizer and learning rate scheduler can be customized by
-            # explicitly constructing the objects and pass to the trainer.
-            #
-            # optimizer = Optimizer(torch.optim.Adam(seq2seq.parameters()), max_grad_norm=5)
-            # scheduler = StepLR(optimizer.optimizer, 1)
-            # optimizer.set_scheduler(scheduler)
-
         # train
-        t = SupervisedTrainer(loss=loss, batch_size=32,
+        t = SupervisedTrainer(criterion=criterion, batch_size=32,
                               checkpoint_every=5000,
                               print_every=10, expt_dir=opt.expt_dir)
 

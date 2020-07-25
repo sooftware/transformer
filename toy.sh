@@ -5,4 +5,7 @@ EXPT_DIR=../data/checkpoints/
 # Start training
 # shellcheck disable=SC2164
 cd toy_problem
-python main.py --train_path $TRAIN_PATH --dev_path $DEV_PATH --expt_dir $EXPT_DIR
+python toy.py --train_path $TRAIN_PATH --dev_path $DEV_PATH --expt_dir $EXPT_DIR
+
+# shellcheck disable=SC2103
+cd ..

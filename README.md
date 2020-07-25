@@ -65,8 +65,8 @@ I appreciate any kind of feedback or contribution.  Feel free to proceed with sm
 
 ## TODO  
   
-* Implements Evaluator & Predictor
-* Extending to speech recognition version 
+* [ ] Implements Evaluator & Predictor
+* [ ] Extending to speech recognition version 
   
 ### Code Style
 I follow [PEP-8](https://www.python.org/dev/peps/pep-0008/) for code style. Especially the style of docstrings is important to generate documentation.  

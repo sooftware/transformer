@@ -13,7 +13,8 @@ import torch.nn as nn
 from torch import Tensor
 from typing import Optional, Tuple
 from transformer.models.modules import Linear
-from transformer.models.mask import subsequent_masking, pad_masking
+from transformer.models.mask import subsequent_masking, pad_masking, get_pad_mask, get_attn_pad_mask, \
+    get_subsequent_mask
 from transformer.models.embeddings import Embedding, PositionalEncoding
 from transformer.models.layers import TransformerEncoderLayer, TransformerDecoderLayer
 
@@ -50,38 +51,26 @@ class Transformer(nn.Module):
                  dropout_p: float = 0.3, ffnet_style: str = 'ff') -> None:
         super(Transformer, self).__init__()
         self.pad_id = pad_id
-        self.encoder = TransformerEncoder(
-            num_embeddings=num_input_embeddings,
-            d_model=d_model,
-            num_layers=num_encoder_layers,
-            num_heads=num_heads,
-            dropout_p=dropout_p,
-            pad_id=pad_id
-        )
-        self.decoder = TransformerDecoder(
-            num_embeddings=num_output_embeddings,
-            d_model=d_model,
-            d_ff=d_ff,
-            num_layers=num_decoder_layers,
-            num_heads=num_heads,
-            ffnet_style=ffnet_style,
-            dropout_p=dropout_p,
-            pad_id=pad_id
-        )
-        self.linear = Linear(d_model, num_classes)
+        self.encoder = TransformerEncoder(num_input_embeddings, d_model, d_ff, num_encoder_layers,
+                                          num_heads, ffnet_style, dropout_p, pad_id)
+        self.decoder = TransformerDecoder(num_output_embeddings, d_model, d_ff, num_decoder_layers,
+                                          num_heads, ffnet_style, dropout_p, pad_id)
+        self.generator = Linear(d_model, num_classes)
 
-    def forward(self, inputs: Tensor, targets: Optional[Tensor]) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        input_length, target_length = inputs.size(1), targets.size(1)
+    def forward(self, inputs: Tensor, input_lengths: Tensor,
+                targets: Optional[Tensor],
+                return_attns: bool = False) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+        batch_size = targets.size(0)
+        targets = targets[targets != self.eos_id].view(batch_size, -1)
 
-        inputs_mask = pad_masking(inputs, input_length, self.pad_id)
-        memory_mask = pad_masking(inputs, target_length, self.pad_id)
-        targets_mask = subsequent_masking(targets)
+        memory, encoder_self_attns = self.encoder(inputs, input_lengths)
+        output, decoder_self_attns, memory_attns = self.decoder(targets, input_lengths, memory)
+        output = self.generator(output)
 
-        memory, encoder_self_attns = self.encoder(inputs, inputs_mask)
-        output, decoder_self_attns, decoder_encoder_attns = self.decoder(targets, memory, targets_mask, memory_mask)
-        output = self.linear(output)
+        if return_attns:
+            return output, encoder_self_attns, decoder_self_attns, memory_attns
 
-        return output, encoder_self_attns, decoder_self_attns, decoder_encoder_attns
+        return output
 
 
 class TransformerEncoder(nn.Module):
@@ -99,22 +88,25 @@ class TransformerEncoder(nn.Module):
         self.num_heads = num_heads
         self.pad_id = pad_id
         self.embedding = Embedding(num_embeddings, pad_id, d_model)
-        self.positional_encoding = PositionalEncoding(d_model, dropout_p)
+        self.pos_encoding = PositionalEncoding(d_model, dropout_p)
+        self.input_dropout = nn.Dropout(p=dropout_p)
         self.layers = nn.ModuleList(
             [TransformerEncoderLayer(d_model, num_heads, d_ff, dropout_p, ffnet_style) for _ in range(num_layers)]
         )
+        self.logit_scale = (d_model ** -0.5)
 
-    def forward(self, inputs: Tensor, inputs_mask: Tensor) -> Tuple[Tensor, Tensor]:
+    def forward(self, inputs: Tensor, input_lengths: Tensor = None) -> Tuple[Tensor, Tensor]:
         self_attns = list()
-        output = None
 
-        inputs = self.embedding(inputs)
-        inputs = self.positional_encoding(inputs)
+        output = self.input_dropout(self.embedding(inputs) * self.logit_scale + self.pos_encoding(inputs))
+
+        non_pad_mask = get_pad_mask(inputs, input_lengths=input_lengths).eq(False)
+        length = inputs.size(1)
+        self_attn_mask = get_pad_mask(inputs, input_lengths).squeeze(-1).unsqueeze(1).expand(-1, length, -1)
 
         for layer in self.layers:
-            output, attn = layer(inputs, inputs_mask)
+            output, attn = layer(output, non_pad_mask, self_attn_mask)
             self_attns.append(attn)
-            inputs = output
 
         return output, self_attns
 
@@ -133,23 +125,27 @@ class TransformerDecoder(nn.Module):
         self.num_layers = num_layers
         self.num_heads = num_heads
         self.embedding = Embedding(num_embeddings, pad_id, d_model)
-        self.positional_encoding = PositionalEncoding(d_model, dropout_p)
+        self.pos_encoding = PositionalEncoding(d_model, dropout_p)
+        self.input_dropout = nn.Dropout(p=dropout_p)
         self.layers = nn.ModuleList(
             [TransformerDecoderLayer(d_model, num_heads, d_ff,  dropout_p, ffnet_style) for _ in range(num_layers)]
         )
+        self.logit_scale = (d_model ** -0.5)
 
-    def forward(self, inputs: Tensor, memory: Tensor,  inputs_mask: Optional[Tensor] = None,
-                memory_mask: Optional[Tensor] = None) -> Tuple[Tensor, Tensor, Tensor]:
-        self_attns, encoder_attns = list(), list()
-        output = None
+    def forward(self, targets: Tensor,
+                input_lengths: Optional[Tensor] = None,
+                memory: Tensor = None) -> Tuple[Tensor, Tensor, Tensor]:
+        self_attns, memory_attns = list(), list()
 
-        inputs = self.embedding(inputs)
-        inputs = self.positional_encoding(inputs)
+        non_pad_mask = get_pad_mask(targets, pad_id=self.pad_id).eq(False)
+        self_attn_mask = get_attn_pad_mask(targets, self.pad_id) | get_subsequent_mask(targets)
+        memory_mask = get_pad_mask(memory, input_lengths).squeeze(-1).unsqueeze(1).expand(-1, targets.size(1), -1)
+
+        output = self.input_dropout(self.embedding(targets) * self.logit_scale + self.pos_encoding(targets.size(1)))
 
         for layer in self.layers:
-            output, self_attn, encoder_attn = layer(inputs, memory, inputs_mask, memory_mask)
+            output, self_attn, memory_attn = layer(output, memory, non_pad_mask, self_attn_mask, memory_mask)
             self_attns.append(self_attn)
-            encoder_attns.append(encoder_attn)
-            inputs = output
+            memory_attns.append(memory_attn)
 
-        return output, self_attns, encoder_attns
+        return output, self_attns, memory_attns

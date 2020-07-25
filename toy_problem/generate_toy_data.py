@@ -19,7 +19,7 @@ def generate_dataset(root, name, size):
     with open(data_path, 'w') as fout:
         for _ in range(size):
             length = random.randint(1, args.max_len)
-            seq = []
+            seq = list()
             for _ in range(length):
                 seq.append(str(random.randint(0, 9)))
             fout.write("\t".join([" ".join(seq), " ".join(reversed(seq))]))

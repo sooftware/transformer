@@ -6,8 +6,6 @@ import torchtext
 import torch.nn as nn
 from torch import optim
 from transformer.optim.optim import Optimizer
-from transformer.evaluator.evaluator import Evaluator
-from transformer.loss.loss import NLLLoss
 from transformer.checkpoint.checkpoint import Checkpoint
 
 
@@ -22,7 +20,7 @@ class SupervisedTrainer(object):
         batch_size (int, optional): batch size for experiment, (default: 64)
         checkpoint_every (int, optional): number of batches to checkpoint after, (default: 100)
     """
-    def __init__(self, expt_dir='experiment', loss=NLLLoss(), batch_size=64,
+    def __init__(self, expt_dir='experiment', criterion=nn.NLLLoss(), batch_size=64,
                  random_seed=None,
                  checkpoint_every=100, print_every=100):
         self._trainer = "Simple Trainer"
@@ -30,8 +28,7 @@ class SupervisedTrainer(object):
         if random_seed is not None:
             random.seed(random_seed)
             torch.manual_seed(random_seed)
-        self.criterion = loss
-        self.evaluator = Evaluator(loss=self.criterion, batch_size=batch_size)
+        self.criterion = criterion
         self.optimizer = None
         self.checkpoint_every = checkpoint_every
         self.print_every = print_every
@@ -100,9 +97,8 @@ class SupervisedTrainer(object):
                 if step % self.print_every == 0 and step_elapsed > self.print_every:
                     print_loss_avg = print_loss_total / self.print_every
                     print_loss_total = 0
-                    log_msg = 'Progress: %d%%, Train %s: %.4f' % (
+                    log_msg = 'Progress: %d%%, Train Loss: %.4f' % (
                         step / total_steps * 100,
-                        self.criterion.name,
                         print_loss_avg)
                     log.info(log_msg)
 
@@ -119,11 +115,8 @@ class SupervisedTrainer(object):
 
             epoch_loss_avg = epoch_loss_total / min(steps_per_epoch, step - start_step)
             epoch_loss_total = 0
-            log_msg = "Finished epoch %d: Train %s: %.4f" % (epoch, self.criterion.name, epoch_loss_avg)
+            log_msg = "Finished epoch %d: Train Loss: %.4f" % (epoch, epoch_loss_avg)
             if dev_data is not None:
-                # dev_loss, accuracy = self.evaluator.evaluate(model, dev_data)
-                # self.optimizer.update(dev_loss, epoch)
-                # log_msg += ", Dev %s: %.4f, Accuracy: %.4f" % (self.criterion.name, dev_loss, accuracy)
                 model.train(mode=True)
             else:
                 self.optimizer.update(epoch_loss_avg, epoch)
