@@ -8,7 +8,7 @@ This repository focused on implementing the contents of the paper as much as pos
   
 <img src="https://tutorials.pytorch.kr/_images/transformer_architecture.jpg" height=500>  
   
-`Transformer-pytorch` is repository for deep learning researcher.   
+`Awesome-transformer` is repository for deep learning researcher.   
 This repository focused on implementing the contents of the paper as much as possible,   
 while at the same time striving for a readable code. To improve readability,      
 I designed the model structure to fit as much as possible to the blocks in the above Transformers figure.
@@ -52,7 +52,7 @@ The sample script by default saves checkpoints in the `experiment` folder of the
   
 ## Troubleshoots and Contributing
   
-If you have any questions, bug reports, and feature requests, please [open an issue](https://github.com/sooftware/ransformer-pytorch/issues) on Github.   
+If you have any questions, bug reports, and feature requests, please [open an issue](https://github.com/sooftware/Awesome-transformer/issues) on Github.   
 Or Contacts sh951011@gmail.com please.
   
 I appreciate any kind of feedback or contribution.  Feel free to proceed with small issues like bug fixes, documentation improvement.  For major contributions and new features, please discuss with the collaborators in corresponding issues.  
