@@ -1,5 +1,5 @@
 [<img src="http://img.shields.io/badge/Documentation-passing-9cf">](https://sooftware.github.io/Transformer-pytorch/) <img src="http://img.shields.io/badge/License-Apache--2.0-9cf">
-# Transformer-pytorch
+# awesome-transformer
   
 A PyTorch Implementation of Transformer in [Attention Is All You Need](https://arxiv.org/abs/1706.03762).  
 This repository focused on implementing the contents of the paper as much as possible.  
