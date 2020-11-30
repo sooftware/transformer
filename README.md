@@ -3,6 +3,7 @@
   
 A PyTorch Implementation of Transformer in [Attention Is All You Need](https://arxiv.org/abs/1706.03762).  
 This repository focused on implementing the contents of the paper as much as possible.  
+Note! There may be an error because it's been a long time since it's been managed.  
   
 ## Intro 
   
@@ -73,6 +74,6 @@ I follow [PEP-8](https://www.python.org/dev/peps/pep-0008/) for code style. Espe
 ## Author
   
 * Soohwan Kim [@sooftware](https://github.com/sooftware)
-* Contacts: sh951011@gmail.com
+* Contacts: kaki.rain@kakaobrain.com
 
 .
