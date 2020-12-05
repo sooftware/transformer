@@ -74,6 +74,6 @@ I follow [PEP-8](https://www.python.org/dev/peps/pep-0008/) for code style. Espe
 ## Author
   
 * Soohwan Kim [@sooftware](https://github.com/sooftware)
-* Contacts: kaki.rain@kakaobrain.com
+* Contacts: kaki.brain@kakaobrain.com
 
 .
