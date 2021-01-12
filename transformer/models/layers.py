@@ -15,18 +15,13 @@ class TransformerEncoderLayer(nn.Module):
         self.self_attention = AddNorm(MultiHeadAttention(d_model, num_heads), d_model)
         self.feed_forward = AddNorm(PoswiseFeedForwardNet(d_model, d_ff, dropout_p, ffnet_style), d_model)
 
-    def forward(self, inputs: Tensor, non_pad_mask: Optional[Tensor] = None,
-                self_attn_mask: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:
+    def forward(
+        self, 
+        inputs: Tensor, 
+        self_attn_mask: Optional[Tensor] = None,
+    ) -> Tuple[Tensor, Tensor]:
         output, attn = self.self_attention(inputs, inputs, inputs, self_attn_mask)
-
-        if non_pad_mask is not None:
-            output *= non_pad_mask
-
         output = self.feed_forward(output)
-
-        if non_pad_mask is not None:
-            output *= non_pad_mask
-
         return output, attn
 
 
@@ -42,23 +37,13 @@ class TransformerDecoderLayer(nn.Module):
         self.encoder_attention = AddNorm(MultiHeadAttention(d_model, num_heads), d_model)
         self.feed_forward = AddNorm(PoswiseFeedForwardNet(d_model, d_ff, dropout_p, ffnet_style), d_model)
 
-    def forward(self, inputs: Tensor, memory: Tensor,
-                non_pad_mask: Tensor = None,
-                self_attn_mask: Tensor = None, memory_mask: Tensor = None) -> Tuple[Tensor, Tensor, Tensor]:
+    def forward(
+        self, inputs: Tensor, 
+        memory: Tensor,
+        self_attn_mask: Tensor = None, 
+        memory_mask: Tensor = None
+    ) -> Tuple[Tensor, Tensor, Tensor]:
         output, self_attn = self.self_attention(inputs, inputs, inputs, self_attn_mask)
-
-        if non_pad_mask is not None:
-            output *= non_pad_mask
-
         output, memory_attn = self.memory_attention(output, memory, memory, memory_mask)
-
-        if non_pad_mask is not None:
-            output *= non_pad_mask
-
         output = self.feed_forward(output)
-
-        if non_pad_mask is not None:
-            output *= non_pad_mask
-
         return output, self_attn, memory_attn
-
