@@ -99,13 +99,11 @@ class TransformerEncoder(nn.Module):
         self_attns = list()
 
         output = self.input_dropout(self.embedding(inputs) * self.logit_scale + self.pos_encoding(inputs))
-
-        non_pad_mask = get_pad_mask(inputs, input_lengths=input_lengths).eq(False)
         length = inputs.size(1)
         self_attn_mask = get_pad_mask(inputs, input_lengths).squeeze(-1).unsqueeze(1).expand(-1, length, -1)
 
         for layer in self.layers:
-            output, attn = layer(output, non_pad_mask, self_attn_mask)
+            output, attn = layer(output, self_attn_mask)
             self_attns.append(attn)
 
         return output, self_attns
@@ -137,14 +135,13 @@ class TransformerDecoder(nn.Module):
                 memory: Tensor = None) -> Tuple[Tensor, Tensor, Tensor]:
         self_attns, memory_attns = list(), list()
 
-        non_pad_mask = get_pad_mask(targets, pad_id=self.pad_id).eq(False)
         self_attn_mask = get_attn_pad_mask(targets, self.pad_id) | get_subsequent_mask(targets)
         memory_mask = get_pad_mask(memory, input_lengths).squeeze(-1).unsqueeze(1).expand(-1, targets.size(1), -1)
 
         output = self.input_dropout(self.embedding(targets) * self.logit_scale + self.pos_encoding(targets.size(1)))
 
         for layer in self.layers:
-            output, self_attn, memory_attn = layer(output, memory, non_pad_mask, self_attn_mask, memory_mask)
+            output, self_attn, memory_attn = layer(output, memory, self_attn_mask, memory_mask)
             self_attns.append(self_attn)
             memory_attns.append(memory_attn)
 
