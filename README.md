@@ -1,6 +1,7 @@
+# Transformer-pytorch
+
 [<img src="http://img.shields.io/badge/Documentation-passing-9cf">](https://sooftware.github.io/Attention-Is-All-You-Need/) <img src="http://img.shields.io/badge/License-Apache--2.0-9cf">
-# Attention Is All You Need
-  
+
 A PyTorch Implementation of Transformer in [Attention Is All You Need](https://arxiv.org/abs/1706.03762).  
 This repository focused on implementing the contents of the paper as much as possible.  
 Note! There may be an error because it's been a long time since it's been managed.  
