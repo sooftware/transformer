@@ -1,8 +1,7 @@
 # transformer
 
 A PyTorch Implementation of Transformer in [Attention Is All You Need](https://arxiv.org/abs/1706.03762).  
-This repository focused on implementing the contents of the paper as much as possible.  
-Note! There may be an error because it's been a long time since it's been managed.  
+This repository focused on implementing the contents of the paper as much as possible.
   
 ## Intro 
   
@@ -12,56 +11,62 @@ This repository focused on implementing the contents of the paper as much as pos
 while at the same time striving for a readable code. To improve readability,      
 I designed the model structure to fit as much as possible to the blocks in the above Transformers figure.
   
-## Get Started
+## Installation
+This project recommends Python 3.7 or higher.
+We recommend creating a new virtual environment for this project (using virtual env or conda).
   
-The toy problem is brought from [IBM/pytorch-seq2seq](https://github.com/IBM/pytorch-seq2seq).  
+### Prerequisites
+* Numpy: `pip install numpy` (Refer [here](https://github.com/numpy/numpy) for problem installing Numpy).
+* Pytorch: Refer to [PyTorch website](http://pytorch.org/) to install the version w.r.t. your environment.  
   
-### Prepare toy dataset  
-```
-$ generate_toy_data.sh --dir ../data --max_len 10
-```  
-  
-### Train and play
-```
-$ toy.sh --d_model 512 --num_heads 8 --d_ff 2048
-```
-  
-**TODO: be in the process of implementation !!**     
-  
-Once training is complete, you will be prompted to enter a new sequence to translate and the model will print out its prediction (use ctrl-C to terminate). Try the example below!  
+### Install from source
+Currently we only support installation from source code using setuptools. Checkout the source code and run the
+following commands:  
   
 ```
-Input: 1 3 5 7 9
-Expected output: 9 7 5 3 1 <eos>
+pip install -e .
 ```
-  
-### Checkpoints  
-Checkpoints are organized by experiments and timestamps as shown in the following file structure  
+
+## Usage
+
+```python
+import torch
+import torch.nn as nn
+from transformer import Transformer
+
+BATCH_SIZE, SEQ_LENGTH, D_MODEL = 3, 10, 64
+
+cuda = torch.cuda.is_available()  
+device = torch.device('cuda' if cuda else 'cpu')
+
+inputs = torch.zeros(BATCH_SIZE, SEQ_LENGTH).long().to(device)
+input_lengths = torch.LongTensor([12345, 12300, 12000])
+targets = torch.LongTensor([[1, 3, 3, 3, 3, 3, 4, 5, 6, 2],
+                            [1, 3, 3, 3, 3, 3, 4, 5, 2, 0],
+                            [1, 3, 3, 3, 3, 3, 4, 2, 0, 0]]).to(device)
+target_lengths = torch.LongTensor([9, 8, 7])
+
+model = nn.DataParallel(Transformer(num_input_embeddings=30, num_output_embeddings=50, 
+                                    d_model=64, 
+                                    num_encoder_layers=3, num_decoder_layers=3)).to(device)
+
+# Forward propagate
+outputs = model(inputs, input_lengths, targets, target_lengths)
+
+# Inference
+outputs = model(inputs, input_lengths)
 ```
-experiment_dir
-+-- input_vocab
-+-- output_vocab
-+-- checkpoints
-|  +-- YYYY_mm_dd_HH_MM_SS
-   |  +-- decoder
-   |  +-- encoder
-   |  +-- model_checkpoint
-```  
-The sample script by default saves checkpoints in the `experiment` folder of the root directory. Look at the usages of the sample code for more options, including resuming and loading from checkpoints.
-  
+
 ## Troubleshoots and Contributing
-  
-If you have any questions, bug reports, and feature requests, please [open an issue](https://github.com/sooftware/Awesome-transformer/issues) on Github.   
-Or Contacts sh951011@gmail.com please.
+If you have any questions, bug reports, and feature requests, please [open an issue](https://github.com/sooftware/conformer/issues) on github or   
+contacts sh951011@gmail.com please.
   
 I appreciate any kind of feedback or contribution.  Feel free to proceed with small issues like bug fixes, documentation improvement.  For major contributions and new features, please discuss with the collaborators in corresponding issues.  
   
 ## Code Style
-I follow [PEP-8](https://www.python.org/dev/peps/pep-0008/) for code style. Especially the style of docstrings is important to generate documentation.  
-  
+I follow [PEP-8](https://www.python.org/dev/peps/pep-0008/) for code style. Especially the style of docstrings is important to generate documentation.
+
 ## Author
   
 * Soohwan Kim [@sooftware](https://github.com/sooftware)
 * Contacts: sh951011@gmail.com
-
-.
